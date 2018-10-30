@@ -1,0 +1,49 @@
+    [System.Serializable]
+    public class CameraRig
+    {
+        public Vector3 cameraOffset;
+        public float damping;
+        public float crouchHeight;
+    }
+
+    //0.7X, 0.8Y, -7Z
+    //damping = 5
+    [SerializeField] CameraRig defaultCamera;
+    [SerializeField] CameraRig aimCamera;
+    Transform cameraLookTarget;
+    Player localPlayer;
+
+    //this sets the variable of the gamemanager onlocalplayerjoined to count up from how many players have joined
+    void Awake()
+    {
+        GameManager.Instance.OnLocalPlayerJoined += HandleLocalPlayerJoined;
+    }
+
+    //this attaches the camera to the player if the player exists
+    void HandleLocalPlayerJoined (Player player)
+    {
+        localPlayer = player;
+        cameraLookTarget = localPlayer.transform.Find("cameraLookTarget");
+        if(cameraLookTarget == null)
+        {
+            cameraLookTarget = localPlayer.transform;
+        }
+    }
+
+    //this will set the camera to follow the player
+    void Update()
+    {
+        if (localPlayer == null)
+            return;
+
+        CameraRig cameraRig = defaultCamera;
+        if (localPlayer.PlayerState.WeaponState == PlayerState.EWeaponState.AIMING || localPlayer.PlayerState.WeaponState == PlayerState.EWeaponState.AIMEDFIRING)
+            cameraRig = aimCamera;
+
+        float targetHeight = cameraRig.cameraOffset.y + (localPlayer.PlayerState.MoveState == PlayerState.EMoveState.CROUCHING ? cameraRig.crouchHeight : 0);
+        Vector3 targetPosition = cameraLookTarget.position + localPlayer.transform.forward * cameraRig.cameraOffset.z + localPlayer.transform.up * (cameraRig.cameraOffset.y + targetHeight) + localPlayer.transform.right * cameraRig.cameraOffset.x;
+        Quaternion targetRotation = Quaternion.LookRotation(cameraLookTarget.position - targetPosition, Vector3.up);
+
+        transform.position = Vector3.Lerp(transform.position, targetPosition, cameraRig.damping * Time.deltaTime);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, cameraRig.damping * Time.deltaTime);   
+    }
