@@ -1,0 +1,82 @@
+public class GameManager 
+{
+    //
+    //this script allows other scripts to access each other
+    //
+    
+    public event System.Action<Player> OnLocalPlayerJoined;
+    private GameObject gameObject;
+
+    private static GameManager m_Instance;
+
+
+    public static GameManager Instance
+    {
+        get
+        {         
+                if (m_Instance == null)
+                {
+                    m_Instance = new GameManager();
+                    m_Instance.gameObject = new GameObject("_gameManager");
+                    m_Instance.gameObject.AddComponent<InputController>();
+                    m_Instance.gameObject.AddComponent<Timer>();
+                    m_Instance.gameObject.AddComponent<Respawner>();
+                }
+                return m_Instance;       
+        }
+    }
+
+
+    //this gets the required components for the InputController script
+    private InputController m_inputController;
+    public InputController InputController
+    {
+        get
+        {
+            if (m_inputController == null)
+                m_inputController = gameObject.GetComponent<InputController>();
+
+            return m_inputController;
+        }
+    }
+
+    //this gets the required components for the Timer script
+    private Timer m_Timerl;
+    public Timer Timer
+    {
+        get
+        {
+            if (m_Timerl == null)
+                m_Timerl = gameObject.GetComponent<Timer>();
+            return m_Timerl;      
+        }
+    }
+
+    //this gets the required components for the Respawner script
+    private Respawner m_respawner;
+    public Respawner Respawner
+    {
+        get
+        {
+            if(m_respawner == null)
+                m_respawner = gameObject.GetComponent<Respawner>();
+            return m_respawner;
+        }
+    }
+
+    //this gets the required components for the Player script, which will also handle any additional players joining via multiplayer
+    private Player m_LocalPlayer;
+    public Player Localplayer {
+        get
+        {
+            return m_LocalPlayer;
+        }
+        set
+        {
+            m_LocalPlayer = value;
+            if (OnLocalPlayerJoined != null)
+                OnLocalPlayerJoined(m_LocalPlayer);
+        }
+    }
+
+}
