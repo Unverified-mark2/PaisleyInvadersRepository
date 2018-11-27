@@ -1,0 +1,134 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+[RequireComponent(typeof(PathFinder))]
+[RequireComponent(typeof(EnemyHealth))]
+[RequireComponent(typeof(EnemyState))]
+public class EnemyPlayer : MonoBehaviour 
+{
+    [SerializeField] SwatSoldier settings;
+	PathFinder pathfinder;
+    [SerializeField]public Scanner playerScanner;
+    Player prioritytarget;
+    List<Player> myTargets;
+
+    public event System.Action<Player> OnTargetSelected;
+
+	private EnemyHealth m_enemyHealth;
+	public EnemyHealth EnemyHealth {
+		get 
+		{
+			if (m_enemyHealth == null)
+				m_enemyHealth = GetComponent<EnemyHealth> ();
+			return m_enemyHealth;
+		}
+	}
+
+    private EnemyState m_enemyState;
+    public EnemyState EnemyState
+    {
+        get
+        {
+            if (m_enemyState == null)
+                m_enemyState = GetComponent<EnemyState>();
+            return m_enemyState;
+        }
+    }
+
+    void CheckEaseWeapon()
+    {
+        //check if we can ease our weapon or stop aiming
+        if (prioritytarget != null)
+            return;
+        this.EnemyState.CurrentMode = EnemyState.Emode.UNAWARE;
+    }
+
+    void CheckContinuePatrol()
+    {
+        //check if the enemy can continbue patrolling
+        if (prioritytarget != null)
+            return;
+
+        pathfinder.agent.isStopped = false;
+    }
+
+    internal void ClearTargetAndScan()
+    {
+        prioritytarget = null;
+        GameManager.Instance.Timer.Add(CheckEaseWeapon, UnityEngine.Random.Range(3,6));
+        GameManager.Instance.Timer.Add(CheckContinuePatrol, UnityEngine.Random.Range(12, 16));
+
+        Scanner_OnScanReady();
+    }
+
+
+    void Start()
+	{
+		pathfinder = GetComponent<PathFinder> ();
+        pathfinder.agent.speed = settings.WalkSpeed;
+
+        playerScanner.OnScanReady += Scanner_OnScanReady;
+        Scanner_OnScanReady();
+        EnemyState.OnModeChanged += EnemyState_OnModeChanged;
+
+        //EnemyHealth.OnDeath += EnemyHealth_OnDeath;
+	}
+
+    private void EnemyState_OnModeChanged(EnemyState.Emode state)
+    {
+        if (state == EnemyState.Emode.UNAWARE)
+            pathfinder.agent.speed = settings.WalkSpeed;
+        
+        else
+            pathfinder.agent.speed = settings.RunSpeed;
+
+    }
+
+    //private void EnemyHealth_OnDeath()
+    //{
+    //    //throw new System.NotImplementedException();
+    //}
+
+    private void Scanner_OnScanReady()
+    {
+        if (prioritytarget != null)
+            return;
+        myTargets = playerScanner.ScanForTargets<Player>();
+        if (myTargets.Count == 1)
+            prioritytarget = myTargets[0];
+        else
+            SelectClosestTarget();
+
+        if (prioritytarget != null)
+        {
+            if (OnTargetSelected != null)
+            {
+                this.EnemyState.CurrentMode = EnemyState.Emode.AWARE;
+                OnTargetSelected(prioritytarget);
+
+            }
+        }
+
+
+
+    }
+
+
+    private void SelectClosestTarget()
+    {
+        float closestTarget = playerScanner.scanRange;
+        foreach (var possibleTarget in myTargets)
+        {
+            if (Vector3.Distance(transform.position, possibleTarget.transform.position) < closestTarget)
+                prioritytarget = possibleTarget;
+        }
+    }
+
+    private void Update()
+    {
+        if (prioritytarget == null || !EnemyHealth.IsAlive)
+            return;
+        transform.LookAt(prioritytarget.transform.position);
+    }
+}
