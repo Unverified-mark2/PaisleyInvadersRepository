@@ -1,0 +1,22 @@
+
+public class MainMenu : MonoBehaviour
+{
+    public void PlayGame()
+    {
+        GameManager.m_Instance = null;
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("Scenes/Intermission");
+        MenuScript.GameIsPaused = false;
+        GameOverScript.GameIsOver = false;
+    }
+
+    public void StartGame()
+    {
+        GameManager.m_Instance = null;
+        SceneManager.LoadScene("Scenes/SampleScene");
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+    
