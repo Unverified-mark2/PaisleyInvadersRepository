@@ -1,0 +1,38 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class EnemyState : MonoBehaviour
+{
+
+    public enum Emode
+    {
+        AWARE,
+        UNAWARE
+    }
+
+    void Awake()
+    {
+        CurrentMode = Emode.UNAWARE;
+    }
+
+    private Emode m_CurrentMode;
+    public Emode CurrentMode
+    {
+        get
+        {
+            return m_CurrentMode;
+        }
+        set
+        {
+            if (m_CurrentMode == value)
+                return;
+
+            m_CurrentMode = value;
+
+            if (OnModeChanged != null)
+                OnModeChanged(value);
+        }
+    }
+
+    public event System.Action<Emode> OnModeChanged;
