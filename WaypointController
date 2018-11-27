@@ -1,0 +1,45 @@
+public class WaypointController : MonoBehaviour
+{
+    Waypoint[] waypoints;
+
+    int currentwaypointindex = -1;
+
+    public event System.Action<Waypoint> OnWaypointChanged;
+
+     void Awake()
+    {
+        waypoints = GetWayPoints();
+    }
+
+    public void SetNextWaypoint()
+    {
+        currentwaypointindex++;
+        if (currentwaypointindex == waypoints.Length)
+            currentwaypointindex = 0;
+
+        if (OnWaypointChanged != null)
+            OnWaypointChanged(waypoints[currentwaypointindex]);
+    }
+
+    Waypoint[] GetWayPoints()
+    {
+        return GetComponentsInChildren<Waypoint>(); 
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.blue;
+        Vector3 previousWaypoint = Vector3.zero;
+
+        foreach(var waypoint in GetWayPoints())
+        {
+            Vector3 waypointPosition = waypoint.transform.position;
+            Gizmos.DrawWireSphere(waypointPosition, 0.2f);
+            if(previousWaypoint != Vector3.zero)
+            {
+                Gizmos.DrawLine(previousWaypoint, waypointPosition);
+            }
+            previousWaypoint = waypointPosition;
+        }
+    }
+}
