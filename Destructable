@@ -14,6 +14,7 @@ public class Destructable : MonoBehaviour
        get
         {
            return hitPoints - damageTaken;
+           
         }
     }
 
