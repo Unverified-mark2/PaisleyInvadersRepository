@@ -1,0 +1,76 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using SharedScripts.Extentions;
+
+[RequireComponent(typeof(EnemyPlayer))]
+public class EnemyShoot : WeaponController
+{
+    [SerializeField] float shootingSpeed;
+    [SerializeField] float burstdurationMax;
+    [SerializeField] float burstDurationMin;
+
+    EnemyPlayer enemyPlayer;
+    bool shouldFire;
+
+    void Start()
+    {
+        enemyPlayer = GetComponent<EnemyPlayer>();
+        enemyPlayer.OnTargetSelected += EnemyPlayer_OnTargetSelected;
+    }
+
+    private void EnemyPlayer_OnTargetSelected(Player target)
+    {
+        ActiveWeapon.AimTarget = target.transform;
+        ActiveWeapon.AimTargetOffset = Vector3.up * 1.5f;
+        StartBurst();
+    }
+
+    void StartBurst()
+    {
+        if (!enemyPlayer.EnemyHealth.IsAlive)
+            return;
+        CheckReload();
+        shouldFire = true;
+
+        GameManager.Instance.Timer.Add(EndBurst, Random.Range(burstDurationMin, burstdurationMax));
+    }
+
+    void EndBurst()
+    {
+        shouldFire = false;
+        if (!enemyPlayer.EnemyHealth.IsAlive)
+            return;
+
+
+        CheckReload();
+        if (CanSeeTarget())
+            GameManager.Instance.Timer.Add(StartBurst, shootingSpeed);
+    }
+
+    bool CanSeeTarget()
+    {
+        if(!transform.IsInLineOfSight(ActiveWeapon.AimTarget.position, 90, enemyPlayer.playerScanner.mask, Vector3.up))
+        {
+            //Clear the target
+            enemyPlayer.ClearTargetAndScan();
+            return false;
+        }
+        return true;
+    }
+
+    void CheckReload()
+    {
+        if(ActiveWeapon.reloader.RoundsRemainingInClip == 0)   
+            ActiveWeapon.Reload();
+        
+    }
+
+    void Update()
+    {
+        if (!shouldFire || !CanFire || !enemyPlayer.EnemyHealth.IsAlive)
+            return;
+
+        ActiveWeapon.Fire();
+    }
+}
