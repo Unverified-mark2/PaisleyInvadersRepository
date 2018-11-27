@@ -1,0 +1,28 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerDie : Destructable {
+
+    [SerializeField] Ragdoll ragDoll;
+    [SerializeField] RectTransform healthBar;
+
+
+    void Awake()
+    {
+        OnDamageReceived += PlayerHealth_OnDamageReceived;
+    }
+
+    private void PlayerHealth_OnDamageReceived()
+    {
+        float health01 = HitPointsRemaining / hitPoints;
+
+        healthBar.localScale = new Vector3(health01, (float)0.28177, 1);
+        if (health01 < 0)
+            healthBar.localScale = new Vector3(0, (float)0.28177, 1);
+    }
+
+    public override void Die()
+    {
+        base.Die();
+        ragDoll.EnableRagdoll(true);
