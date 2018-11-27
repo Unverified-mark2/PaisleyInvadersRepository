@@ -1,0 +1,12 @@
+public class EnemyHealth : Destructable
+{
+	[SerializeField] Ragdoll ragDoll;
+
+	public override void Die ()
+	{
+		base.Die ();
+		ragDoll.EnableRagdoll (true);
+        GameManager.Instance.EventBus.RaiseEvenet("EnemyDead");
+	}
+
+}
