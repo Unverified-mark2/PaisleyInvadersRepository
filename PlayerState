@@ -1,0 +1,71 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerState : MonoBehaviour
+{
+
+    public enum EMoveState
+    {
+        WALKING,
+        RUNNING,
+        CROUCHING,
+        SPRINTING
+    }
+
+    public enum EWeaponState
+    {
+        IDLE,
+        FIRING,
+        AIMING,
+        AIMEDFIRING
+    }
+
+    public EMoveState MoveState;
+    public EWeaponState WeaponState;
+
+    private InputController m_inputController;
+    public InputController inputController
+    {
+        get
+        {
+            if (m_inputController == null)
+                m_inputController = GameManager.Instance.InputController;
+            return m_inputController;
+        }
+    }
+
+    //sets the current State the player is in regarding movement
+    void Update()
+    {
+        SetMoveState();
+        SetWeaponState();
+    }
+
+    void SetWeaponState()
+    {
+        WeaponState = EWeaponState.IDLE;
+        if (inputController.Fire1)
+            WeaponState = EWeaponState.FIRING;
+
+        if (inputController.Fire2)
+            WeaponState = EWeaponState.AIMING;
+
+        if (inputController.Fire1 && inputController.Fire2)
+            WeaponState = EWeaponState.AIMEDFIRING;
+    }
+
+    //finds out which state the player is in by finding out what value the inputcontroller is currently at
+    void SetMoveState()
+    {
+        MoveState = EMoveState.RUNNING;
+        if (inputController.IsSprinting)
+            MoveState = EMoveState.SPRINTING;
+
+        if (inputController.IsWalking)
+            MoveState = EMoveState.WALKING;
+        if (inputController.IsCrouched)
+            MoveState = EMoveState.CROUCHING;
+    }
+
+}
