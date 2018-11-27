@@ -1,0 +1,44 @@
+[RequireComponent(typeof(NavMeshAgent))]
+public class PathFinder : MonoBehaviour 
+{
+	[HideInInspector]
+	public NavMeshAgent agent;
+
+	[SerializeField]float distanceRemainingThreshold;
+
+	bool m_destinationReached;
+	bool destinationReached
+	{
+		get { return m_destinationReached; }
+		set
+		{
+			m_destinationReached = value;
+			if(m_destinationReached)
+			{
+				if(OnDestionationReached != null)
+					OnDestionationReached();
+			}
+		}
+	}
+
+	public event System.Action OnDestionationReached;
+
+	void Awake()
+	{
+		agent = GetComponent<NavMeshAgent> ();			
+	}
+
+	public void SetTarget(Vector3 target)
+	{
+		agent.SetDestination (target);
+        destinationReached = false;
+    }
+
+	void Update()
+	{
+		if (destinationReached || !agent.hasPath)
+			return;
+		if (agent.remainingDistance < distanceRemainingThreshold)
+			destinationReached = true;
+	}
+}
