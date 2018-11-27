@@ -1,0 +1,69 @@
+[RequireComponent(typeof(SphereCollider))]
+public class Scanner : MonoBehaviour
+{
+    [SerializeField] float scanSpeed;
+    [SerializeField]
+    [Range(0, 360)]
+    float fieldofView;
+    [SerializeField]public LayerMask mask;
+
+    SphereCollider rangeTrigger;
+
+    public float scanRange
+    {
+        get
+        {
+            if (rangeTrigger == null)
+                rangeTrigger = GetComponent<SphereCollider>();
+            return rangeTrigger.radius;
+        }
+    }
+
+	public event System.Action OnScanReady; 
+
+    void PrepareScan()
+    {
+
+        GameManager.Instance.Timer.Add(() => 
+        { if (OnScanReady != null) OnScanReady();}, scanSpeed);
+    }
+
+    //this draws gizmoz on screen for debugging purposes to show where the FOV is
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.green;
+        Gizmos.DrawLine(transform.position, transform.position + GetViewAngle(fieldofView / 2) * GetComponent<SphereCollider>().radius);
+        Gizmos.DrawLine(transform.position, transform.position + GetViewAngle(-fieldofView / 2) * GetComponent<SphereCollider>().radius);
+
+    }
+
+    //this sets the angle for the general fov
+    Vector3 GetViewAngle(float angle)
+    {
+        float radian = (angle + transform.eulerAngles.y) * Mathf.Deg2Rad;
+        return new Vector3(Mathf.Sin(radian), 0, Mathf.Cos(radian));
+    }
+
+    //this sets up the scanner to detect the player
+    public List<T> ScanForTargets<T>()
+    {
+			print ("scanfortargets");
+			List<T> targets = new List<T> ();
+			Collider[] results = Physics.OverlapSphere (transform.position, scanRange);
+		
+			for (int i = 0; i < results.Length; i++) {
+				var player = results [i].transform.GetComponent<T> ();
+
+				if (player == null)
+					continue;
+
+				if (!transform.IsInLineOfSight (results [i].transform.position, fieldofView, mask, Vector3.up))
+					continue;
+
+				targets.Add (player);
+			}
+
+			PrepareScan ();
+			return targets;
+    }
+ }
