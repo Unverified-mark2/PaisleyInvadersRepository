@@ -1,0 +1,48 @@
+public class Crosshair : MonoBehaviour
+{
+    [SerializeField] float speed;
+    public Transform reticle;
+    Transform crossTop;
+    Transform crossBottom;
+    Transform crossLeft;
+    Transform crossRight;
+
+    float reticleStartPoint;
+
+    void Start()
+    {
+        crossTop = reticle.Find("Cross/Top").transform;
+        crossBottom = reticle.Find("Cross/Bottom").transform;
+        crossLeft = reticle.Find("Cross/Left").transform;
+        crossRight = reticle.Find("Cross/Right").transform;
+
+        reticleStartPoint = crossTop.localPosition.y;
+    }
+
+    void SetVisibility(bool value)
+    {
+        reticle.gameObject.SetActive(value);
+    }
+
+    void Update()
+    {
+        SetVisibility(false);
+        if(GameManager.Instance.InputController.Fire2)
+        {
+            SetVisibility(true);
+
+        }
+
+        Vector3 screenPosition = Camera.main.WorldToScreenPoint(transform.position);
+        reticle.transform.position = Vector3.Lerp(reticle.transform.position, screenPosition, speed * Time.deltaTime);
+    }
+
+    public void ApplyScale(float scale)
+    {
+        crossTop.localPosition = new Vector3(0, reticleStartPoint + scale, 0);
+        crossBottom.localPosition = new Vector3(0, -reticleStartPoint - scale, 0);
+        crossLeft.localPosition = new Vector3(-reticleStartPoint - scale, 0, 0);
+        crossRight.localPosition = new Vector3(reticleStartPoint + scale, 0, 0);
+
+    }
+}
