@@ -1,0 +1,27 @@
+[RequireComponent(typeof(PathFinder))]
+[RequireComponent(typeof(EnemyPlayer))]
+public class EnemyAnimation : MonoBehaviour
+{
+
+    [SerializeField] Animator animator;
+
+    Vector3 lastPosition;
+
+    PathFinder pathfinder;
+
+    EnemyPlayer enemyPlayer;
+
+    void Awake()
+    {
+        pathfinder = GetComponent<PathFinder>();
+        enemyPlayer = GetComponent<EnemyPlayer>();
+    }
+
+    void Update()
+    {
+        float Velocity = ((transform.position - lastPosition).magnitude) / Time.deltaTime;
+        lastPosition = transform.position;
+        animator.SetBool("IsWalking", enemyPlayer.EnemyState.CurrentMode == EnemyState.Emode.UNAWARE);
+        animator.SetFloat("Vertical", Velocity / pathfinder.agent.speed);
+        animator.SetBool("IsAiming", enemyPlayer.EnemyState.CurrentMode == EnemyState.Emode.AWARE);
+    }
