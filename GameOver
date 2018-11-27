@@ -1,0 +1,50 @@
+public class GameOverScript : MonoBehaviour {
+
+    public static bool GameIsOver = false;
+    public float Timer;
+
+    public GameObject gameOverUI;
+    public PlayerDie playerdie;
+
+    // Update is called once per frame
+    public void Update()
+    {
+        if (GameIsOver == true)
+        {
+            Timer += Time.deltaTime;
+        }
+
+        if(playerdie.HitPointsRemaining <= 0)
+        {
+            PlayerDied();
+        }
+
+        if (GameIsOver == true)
+        {
+            gameOverUI.SetActive(true);
+        }
+        else
+            gameOverUI.SetActive(false);
+    }
+
+    //this will bring up the Game Over screen if the player dies
+    void PlayerDied()
+    {
+        if (Timer > 0.75)
+        {
+            Time.timeScale = 0f;
+        }
+        GameIsOver = true;
+        gameOverUI.SetActive(true);
+    }
+
+    //this will load the Main Menu
+    public void LoadMenu()
+    { 
+        GameManager.m_Instance = null;
+        GameIsOver = false;
+        gameOverUI.SetActive(false);
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("MainMenu");
+    }
+}
