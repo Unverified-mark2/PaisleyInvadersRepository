@@ -1,0 +1,40 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerAnimation : MonoBehaviour
+{
+    Animator animator;
+    private PlayerAim m_playerAim;
+    private PlayerAim playerAim
+    {
+        get
+        {
+            if (m_playerAim == null)
+                m_playerAim = GameManager.Instance.Localplayer.playerAim;
+            return m_playerAim;
+        }
+    }
+
+    void Awake()
+    {
+        animator = GetComponentInChildren<Animator>();
+    }
+
+    private void LateUpdate()
+    {
+
+        if (MenuScript.GameIsPaused == false)
+        {
+            animator.SetFloat("Vertical", GameManager.Instance.InputController.Vertical);
+            animator.SetFloat("Horizontal", GameManager.Instance.InputController.Horizontal);
+            animator.SetFloat("AimAngle", playerAim.GetAngle());
+
+            animator.SetBool("IsSprinting", GameManager.Instance.InputController.IsSprinting);
+            animator.SetBool("IsWalking", GameManager.Instance.InputController.IsWalking);
+            animator.SetBool("IsCrouched", GameManager.Instance.InputController.IsCrouched);
+
+            animator.SetBool("IsAiming", GameManager.Instance.Localplayer.PlayerState.WeaponState == PlayerState.EWeaponState.AIMING || GameManager.Instance.Localplayer.PlayerState.WeaponState == PlayerState.EWeaponState.AIMEDFIRING);
+        }
+    }
+}
